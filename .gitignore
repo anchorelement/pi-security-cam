@@ -1,0 +1,10 @@
+.venv/
+.vscode/
+image/
+video/
+migrations/
+instance/
+__pycache__/
+tmp/
+*.log
+test.py
