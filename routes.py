@@ -75,7 +75,9 @@ def login():
     if form.validate_on_submit():
         try:
             user = User.query.filter_by(email=form.email.data).first()
-            if check_password_hash(user.pwd, form.pwd.data):
+            if not user.is_admin:
+                flash(f"{user.username} is not an admin.", "danger")
+            elif check_password_hash(user.pwd, form.pwd.data):
                 login_user(user)
                 return redirect(url_for("home"))
             else:
@@ -102,6 +104,7 @@ def register():
                 username=username,
                 email=email,
                 pwd=bcrypt.generate_password_hash(pwd),
+                is_admin=False,
             )
 
             db.session.add(newuser)
@@ -114,7 +117,7 @@ def register():
             flash(f"Something went wrong!", "danger")
         except IntegrityError:
             db.session.rollback()
-            flash(f"User already exists!.", "warning")
+            flash(f"Integrity Constraint Violation!", "warning")
         except DataError:
             db.session.rollback()
             flash(f"Invalid Entry", "warning")
