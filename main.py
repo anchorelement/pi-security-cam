@@ -21,7 +21,7 @@ from flask_login import (
     logout_user,
     login_required,
 )
-from app import create_app, db, login_manager, bcrypt
+from __init__ import create_app, db, login_manager, bcrypt
 from models import User
 from forms import login_form, register_form
 import logging

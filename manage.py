@@ -1,6 +1,6 @@
 def deploy():
     """Run deployment tasks."""
-    from app import create_app, db
+    from __init__ import create_app, db
     from flask_migrate import upgrade, migrate, init, stamp
     from models import User
 

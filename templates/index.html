@@ -1,20 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-{% if current_user.is_authenticated %}
+<div class="container">
+    <div class="row mt-4">
+        <div class="col-lg-5 col-md-6 m-auto card p-4">
+            {% if current_user.is_authenticated %}
 
-<h3>Welcome {{ current_user.username }}</h3>
-<a href="{{url_for('logout')}}">Logout</a>
-{% if armed %}
-<p> Camera is currently armed.</p>
-{% elif not armed %}
-<p> Camera is currently disarmed.</p>
-{% endif %}
-<form method="POST" action="/">
-    {{ form.csrf_token }}
-    {{ form.submit(class_="btn btn-primary") }}
-    <!-- <div class='status'>{{armed}}</div> -->
-</form>
-{% else %}
-<a href="{{url_for('login')}}">Sign in/Sign Up</a>
-{% endif %}
+            <h3>Welcome {{ current_user.username }}</h3>
+            <a href="{{url_for('logout')}}">Logout</a>
+            {% if armed %}
+            <p> Camera is currently armed.</p>
+            {% elif not armed %}
+            <p> Camera is currently disarmed.</p>
+            {% endif %}
+            <form method="POST" action="/">
+                {{ form.csrf_token }}
+                {{ form.submit(class_="btn btn-primary") }}
+                <!-- <div class='status'>{{armed}}</div> -->
+            </form>
+            {% else %}
+            <a href="{{url_for('login')}}">Sign in/Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

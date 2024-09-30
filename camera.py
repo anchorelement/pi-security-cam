@@ -8,10 +8,8 @@ import threading
 import time
 from notifications import send_mail
 from pprint import pprint
-import sys
 import logging
 
-# TODO: send a few of the first frames of video via email
 # TODO: look into automatically converting videos to mpeg
 # TODO: look into uploading to a service like S3
 
@@ -62,7 +60,7 @@ class Camera:
         diff = cv2.absdiff(gray1, gray2)
         cnz = cv2.countNonZero(diff)
         if cnz > MOTION_SENS_THRESH:
-            logging.debug(f"Count of non-zero pixels in delta frame: {cnz}.")
+            logging.debug(f"Count of non-zero array elements in delta frame: {cnz}.")
             return True
         return False
 
