@@ -27,7 +27,7 @@ from forms import login_form, register_form
 import logging
 
 logging.basicConfig(
-    # filename="pi-camera.log",
+    filename="pi-camera.log",
     encoding="utf-8",
     level=logging.INFO,
     format="%(asctime)s %(message)s",

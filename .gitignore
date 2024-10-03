@@ -5,6 +5,8 @@ video/
 migrations/
 instance/
 __pycache__/
+ssl/
 tmp/
 *.log
 test.py
+start.sh

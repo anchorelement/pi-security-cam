@@ -17,11 +17,12 @@ MSIZE = (1920, 1080)  # size for the main video config
 MOTION_SENS_THRESH = 0.6  # threshold for triggering motion capture, higher requires more change between frames
 RECORD_TAIL = 5.0  # how long to keep recording after motion passes below threshold
 RECORD_MAX = 30.0  # maximum length of individual video files
+NOTIFY_AFTER = 10  # how many motion frames before sending notification
 
 
 class Camera:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.armed = False
         self.camera_thread = None
         self.picam2 = Picamera2()
@@ -37,14 +38,14 @@ class Camera:
         logging.debug(self.picam2.camera_configuration())
         time.sleep(2)
 
-    def arm(self):
+    def arm(self) -> None:
         if not self.armed and not self.camera_thread:
             self.camera_thread = threading.Thread(target=self.run)
         self.armed = True
         logging.info("Camera armed.")
         self.camera_thread.start()
 
-    def disarm(self):
+    def disarm(self) -> None:
         self.armed = False
         self.camera_thread = None
         logging.info("Camera disarmed.")
@@ -55,18 +56,19 @@ class Camera:
         gray2 = cv2.cvtColor(current, cv2.COLOR_YUV2GRAY_I420)
         gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
         mse = np.square(np.subtract(gray2, gray1)).mean()
-        # logging.info(f"MSE: {mse}.")
+        # logging.debug(f"MSE: {mse}.")
         if mse > MOTION_SENS_THRESH:
-            logging.info(f"MSE: {mse}.")
+            logging.debug(f"MSE: {mse}.")
             return True
         return False
 
-    def send_notification(self):
+    def send_notification(self) -> None:
         attach_name = f"image/{time.strftime('%Y_%m_%d-%H_%M_%S')}.jpeg"
         self.picam2.capture_file(attach_name)
+        logging.info(type(attach_name))
         send_mail(attach_name)
 
-    def run(self):
+    def run(self) -> None:
         previous = None
         self.encoding = False
         start_time = 0
@@ -85,6 +87,11 @@ class Camera:
                     # check if video is over the max length
                     if self.encoding:
                         encoding_length = ltime - start_time
+                        if motion_frames == NOTIFY_AFTER:
+                            notification_thread = threading.Thread(
+                                target=self.send_notification
+                            )
+                            notification_thread.start()
                         logging.debug(f"Video recording for: {encoding_length:.3}s.")
                         if encoding_length > RECORD_MAX:
                             logging.info(
@@ -101,9 +108,9 @@ class Camera:
                     motion_frames = 0
             previous = current
 
-    def start_video(self):
-        notification_thread = threading.Thread(target=self.send_notification)
-        notification_thread.start()
+    def start_video(self) -> None:
+        # notification_thread = threading.Thread(target=self.send_notification)
+        # notification_thread.start()
         self.picam2.start_encoder(
             encoder=self.encoder,
             output=FileOutput(f"video/{time.strftime('%Y_%m_%d-%H_%M_%S')}.h264"),
@@ -112,7 +119,7 @@ class Camera:
         self.encoding = True
         logging.info("New motion.")
 
-    def stop_video(self):
+    def stop_video(self) -> None:
         self.picam2.stop_encoder()
         self.encoding = False
         logging.info("Stopped encoding.")
