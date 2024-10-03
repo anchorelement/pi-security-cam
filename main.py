@@ -75,11 +75,12 @@ def login():
     if form.validate_on_submit():
         try:
             user = User.query.filter_by(email=form.email.data).first()
-            if not user.is_admin:
-                flash(f"{user.username} is not an admin.", "danger")
-            elif check_password_hash(user.pwd, form.pwd.data):
-                login_user(user)
-                return redirect(url_for("home"))
+            if check_password_hash(user.pwd, form.pwd.data):
+                if not user.is_admin:
+                    flash(f"{user.username} is not an admin.", "danger")
+                else:
+                    login_user(user)
+                    return redirect(url_for("home"))
             else:
                 flash("Invalid Username or password!", "danger")
         except Exception as e:
