@@ -9,6 +9,7 @@ import time
 from notifications import send_mail
 from pprint import pprint
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,10 @@ class Camera:
     def __init__(self) -> None:
         self.armed = False
         self.camera_thread = None
+        if not os.path.exists("video"):
+            os.makedirs("video")
+        if not os.path.exists("image"):
+            os.makedirs("image")
         self.picam2 = Picamera2()
         video_config = self.picam2.create_video_configuration(
             main={"size": MSIZE, "format": "RGB888"},
