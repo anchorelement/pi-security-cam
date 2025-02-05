@@ -12,7 +12,6 @@ RECIPIENT = os.getenv("MOTIONCAM_RECIPIENT")
 
 logger = logging.getLogger(__name__)
 
-
 def send_mail(file_attach: str) -> None:
     msg = EmailMessage()
     msg["subject"] = SUBJECT

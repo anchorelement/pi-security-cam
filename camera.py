@@ -1,5 +1,5 @@
 from picamera2 import Picamera2
-from picamera2.encoders import H264Encoder, Quality
+from picamera2.encoders import H264Encoder, Quality, MJPEGEncoder
 from picamera2.outputs import FileOutput, FfmpegOutput
 from libcamera import controls
 import cv2
@@ -36,7 +36,7 @@ class Camera:
             lores={"size": LSIZE, "format": "YUV420"},
             raw=self.picam2.sensor_modes[1],
         )
-        self.encoder = H264Encoder(bitrate=10000000)
+        self.encoder = H264Encoder()
         self.encoding = False
         self.picam2.configure(video_config)
         self.picam2.start()
@@ -61,7 +61,6 @@ class Camera:
         gray2 = cv2.cvtColor(current, cv2.COLOR_YUV2GRAY_I420)
         gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
         mse = np.square(np.subtract(gray2, gray1)).mean()
-        # logging.debug(f"MSE: {mse}.")
         if mse > MOTION_SENS_THRESH:
             logging.debug(f"MSE: {mse}.")
             return True
@@ -70,7 +69,6 @@ class Camera:
     def send_notification(self) -> None:
         attach_name = f"image/{time.strftime('%Y_%m_%d-%H_%M_%S')}.jpeg"
         self.picam2.capture_file(attach_name)
-        logging.info(type(attach_name))
         send_mail(attach_name)
 
     def run(self) -> None:
@@ -114,15 +112,13 @@ class Camera:
             previous = current
 
     def start_video(self) -> None:
-        # notification_thread = threading.Thread(target=self.send_notification)
-        # notification_thread.start()
+        logging.info("New motion.")
         self.picam2.start_encoder(
             encoder=self.encoder,
             output=FileOutput(f"video/{time.strftime('%Y_%m_%d-%H_%M_%S')}.h264"),
             quality=Quality.HIGH,
         )
         self.encoding = True
-        logging.info("New motion.")
 
     def stop_video(self) -> None:
         self.picam2.stop_encoder()
