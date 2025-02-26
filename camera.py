@@ -53,6 +53,7 @@ class Camera:
     def disarm(self) -> None:
         self.armed = False
         self.camera_thread = None
+        self.stop_video()
         logging.info("Camera disarmed.")
 
     def detect_motion(self, previous, current) -> bool:
