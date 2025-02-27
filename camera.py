@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 LSIZE = (640, 480)  # size for the lores video config
 MSIZE = (1920, 1080)  # size for the main video config
-MOTION_SENS_THRESH = 0.6  # threshold for triggering motion capture, higher requires more change between frames
+MOTION_SENS_THRESH = 0.7  # threshold for triggering motion capture, higher requires more change between frames
+MOTION_FRAMES_THRESH = 4 
 RECORD_TAIL = 5.0  # how long to keep recording after motion passes below threshold
 RECORD_MAX = 30.0  # maximum length of individual video files
 NOTIFY_AFTER = 10  # how many motion frames before sending notification
@@ -40,7 +41,7 @@ class Camera:
         self.encoding = False
         self.picam2.configure(video_config)
         self.picam2.start()
-        logging.debug(self.picam2.camera_configuration())
+        logging.info(self.picam2.camera_configuration())
         time.sleep(2)
 
     def arm(self) -> None:
@@ -63,7 +64,7 @@ class Camera:
         gray2 = cv2.GaussianBlur(gray2, (21, 21), 0)
         mse = np.square(np.subtract(gray2, gray1)).mean()
         if mse > MOTION_SENS_THRESH:
-            logging.debug(f"MSE: {mse}.")
+            logging.info(f"MSE: {mse}.")
             return True
         return False
 
@@ -83,7 +84,7 @@ class Camera:
                 if self.detect_motion(current, previous):
                     motion_frames += 1
                     # filter out short spikes of detected motion (usually false positives)
-                    if not self.encoding and motion_frames > 2:
+                    if not self.encoding and motion_frames >= MOTION_FRAMES_THRESH:
                         self.start_video()
                         start_time = time.time()
                     # mark last time of detected motion
@@ -96,7 +97,7 @@ class Camera:
                                 target=self.send_notification
                             )
                             notification_thread.start()
-                        logging.debug(f"Video recording for: {encoding_length:.3}s.")
+                        logging.info(f"Video recording for: {encoding_length:.3}s.")
                         if encoding_length > RECORD_MAX:
                             logging.info(
                                 f"Stopping video due to max length: {encoding_length:.3}s."
